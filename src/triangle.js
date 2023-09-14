@@ -1,3 +1,4 @@
+// Malcolm Kahora
 "use strict";
 
 var gl;
@@ -5,6 +6,7 @@ var points;
 
 var circle_length = 0;
 var circle_filled_length = 0;
+var rect_length = 4;
 
 window.onload = function init()
 {
@@ -20,48 +22,45 @@ window.onload = function init()
     // rsin and rcos for TODO
 
     // To displace the circle you can 
+    var color_hollow_circle = []
+    var color_filled_circle = []
+    var color_rect = [
+	vec3(1,0,1),
+	vec3(0.5,0,1),
+	vec3(1,0.3,1),
+	vec3(0,0,1),
+    ]
 
-    var colors2 = [vec3(1,0,0)]
-    // Returns a list of points given these values
-    var circle_calc = function (x,y,step,radius) {
+    var rectangle = [
+	vec2(-0.3,0),
+	vec2(-0.3,0.6),
+	vec2(0,0),
+	vec2(0,0.6),
+    ]
+
+
+
+    // Returns a list of points given these values // color vec3
+    var circle_calc = function (x,y,step,radius, color, color_list) {
 	var returnList = []
 	for (let i = 0; i <= 6.28; i+=step) {
 	    returnList.push(vec2(radius * Math.cos(i) + x, radius * Math.sin(i) + y))
-	    colors2.push(vec3(1,0,0))
+	    color_list.push(color)
 	}
 	return returnList
     }
 
-    var circle = circle_calc(0.5,0,0.1,0.5)
+    var circle = circle_calc(-0.3,0,0.1,0.5, vec3(0,0,1), color_hollow_circle)
     circle_length = circle.length
 
 
-    var circle_filled = circle_calc(0,0,0.1,0.5)
+    var circle_filled = circle_calc(-0.7,0,0.1,0.3, vec3(1,0,1), color_filled_circle)
     circle_filled_length = circle.length
 
-    console.log(circle)
     // Three Vertices        
-    var vertices = [
-        vec2(-1, -1),
-        vec2(-0.5, 1),
-        vec2(0, -1)    
-    ];
-
-    var final_list = circle.concat(circle_filled)
-    // var colors = [
-    //     vec3(1, 0, 0),
-    //     vec3(0, 1, 0),
-    //     vec3(0, 0, 1)
-    // ];
-        
-    // vertices.push(vec2(0.1, -0.5));
-    // colors.push(vec3(1,0,0));
-    // vertices.push(vec2(0.5, 1));
-    // colors.push(vec3(1,0,0));
-    // vertices.push(vec2(1, -1));
-    // colors.push(vec3(1,0,0));
- 
-
+    var final_list = circle.concat(circle_filled).concat(rectangle)
+    var colors = color_hollow_circle.concat(color_filled_circle).concat(color_rect)
+    console.log(final_list)
 
     // Configure WebGL   
     gl.viewport( 0, 0, canvas.width, canvas.height );
@@ -75,7 +74,7 @@ window.onload = function init()
     // Load the data into the GPU       
     var cBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(colors2), gl.STATIC_DRAW);
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
 
     // Associate out shader variables with our data buffer
     var vColor = gl.getAttribLocation(program, "vColor");    
@@ -101,4 +100,5 @@ function render() {
     // gl.drawArrays(gl.TRIANGLES, 3, 3);
     gl.drawArrays(gl.LINE_LOOP, 0, circle_length);
     gl.drawArrays(gl.TRIANGLE_FAN, circle_length, circle_filled_length);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 126, 4);
 }
