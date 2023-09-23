@@ -84,31 +84,43 @@ window.onload = function init()
 	//  start at -1,1 add 1/8 to each side
 	//  
 	var res = []
-	var step = 1/row
-	for (let i = 0; i < row; i++) {
-	    var x = -1	    
-	    var y = 1	    
+	var step = 1/4
+	var count = 0
+	for (let y = 1; y >= -1; y -= step) {
+	    count += 1
+	    for (let i = 0; i < row; i++) {
+		var x = -1	    
+		// if y is even then start with 0
+		// odd start with 1
+		var color_i = 0
+		if (count % 2 != 0) {
+		    color_i = i % 2 == 0 ? 1 : 0
+		}
+		if (count % 2 == 0) {
+		    color_i = i % 2 == 0 ? 0 : 1
+		}
 		res.push(vec2(x + (i * step), y))
 		res.push(vec2(x + (i * step) + step, y))
 		res.push(vec2(x + (i * step), y - step))
 		res.push(vec2(x + (i * step) + step, y - step))
-		colors.push(vec3(1,1,1))
-		colors.push(vec3(1,1,1))
-		colors.push(vec3(1,1,1))
-		colors.push(vec3(1,1,1))
-	} 
+		colors.push(vec3(color_i, color_i, color_i))
+		colors.push(vec3(color_i, color_i, color_i))
+		colors.push(vec3(color_i, color_i, color_i))
+		colors.push(vec3(color_i, color_i, color_i))
+	    } 
+	}
 
 	console.log(res)
 	return res
 
     }
 
-    shapes.push({"points": circle_filled})
-    shapes.push({"points": circle})
-    shapes.push({"points": rectangle})
+    var colors = []
+    colors.push(vec3(0,0,0))
     shapes.push({"points": make_boxes(8,8)})
 
     console.log(get_points(shapes))
+    console.log(colors)
 
     // Configure WebGL   
     //
@@ -146,9 +158,5 @@ function render() {
     gl.clear(gl.COLOR_BUFFER_BIT); 
     // gl.drawArrays(gl.LINE_LOOP, 0, 3)
     // gl.drawArrays(gl.TRIANGLES, 3, 3);
-    gl.drawArrays(gl.LINE_LOOP, 0, circle_length);
-    gl.drawArrays(gl.TRIANGLE_FAN, circle_length, circle_filled_length);
-    console.log(shapes[3].points.length)
-    gl.drawArrays(gl.TRIANGLE_STRIP, circle_length + circle_filled_length, 4);
-    gl.drawArrays(gl.TRIANGLE_STRIP, circle_length + circle_filled_length + 4, shapes[3].points.length );
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, shapes[0].points.length );
 }
