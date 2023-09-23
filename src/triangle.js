@@ -7,6 +7,7 @@ var points;
 var circle_length = 0;
 var circle_filled_length = 0;
 var rect_length = 4;
+var shapes = {} // Name of shape, list of values get the length easuly by length of list of values
 
 window.onload = function init()
 {
@@ -50,6 +51,7 @@ window.onload = function init()
 	return returnList
     }
 
+    // Use a hash table to store each list
     var circle = circle_calc(-0.3,0,0.1,0.5, vec3(0,0,1), color_hollow_circle)
     circle_length = circle.length
 
@@ -61,7 +63,7 @@ window.onload = function init()
     var final_list = circle.concat(circle_filled).concat(rectangle)
     var colors = color_hollow_circle.concat(color_filled_circle).concat(color_rect)
     console.log(final_list)
-
+    
     // Configure WebGL   
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );   
