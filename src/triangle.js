@@ -7,7 +7,8 @@ var points;
 var circle_length = 0;
 var circle_filled_length = 0;
 var rect_length = 4;
-var shapes = {} // Name of shape, list of values get the length easuly by length of list of values
+var shapes = [] // Name of shape, list of values get the length easuly by length of list of values // also color
+// {name: String, points: Array, color: Array}
 
 window.onload = function init()
 {
@@ -40,7 +41,6 @@ window.onload = function init()
     ]
 
 
-
     // Returns a list of points given these values // color vec3
     var circle_calc = function (x,y,step,radius, color, color_list) {
 	var returnList = []
@@ -62,16 +62,35 @@ window.onload = function init()
     // Three Vertices        
     var final_list = circle.concat(circle_filled).concat(rectangle)
     var colors = color_hollow_circle.concat(color_filled_circle).concat(color_rect)
-    console.log(final_list)
+    var get_points = function(shapes) {
+
+	var res = []
+	// TODO 0 is there so that when I get the points not the color
+	for (let shape = 0; shape < shapes.length; shape++) {
+	    console.log(shapes[shape][0])
+	    for (let point = 0; point < shapes[shape][0].length; point++) {
+		res.push(shapes[shape][0][point])
+	    }
+		
+	} 
+	return res
+
+
+    }
+
+    shapes.push([circle_filled])
+    shapes.push([circle])
+    shapes.push([rectangle])
+    console.log(get_points(shapes))
     
     // Configure WebGL   
+    //
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );   
  
     // Load shaders and initialize attribute buffers
     var program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);        
-    this.console.log("message");
 
     // Load the data into the GPU       
     var cBuffer = gl.createBuffer();
@@ -86,7 +105,7 @@ window.onload = function init()
     // Load the data into the GPU       
     var vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(final_list), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(get_points(shapes)), gl.STATIC_DRAW);
    
     // Associate out shader variables with our data buffer
     var vPosition = gl.getAttribLocation(program, "vPosition");
