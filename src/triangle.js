@@ -5,6 +5,8 @@ var gl;
 var points;
 
 var circle_length = 0;
+var checker_size = 0;
+var box_end = 0;
 var circle_filled_length = 0;
 var rect_length = 4;
 var shapes = [] // Name of shape, list of values get the length easuly by length of list of values // also color
@@ -72,21 +74,44 @@ window.onload = function init()
 	    }
 		
 	} 
+	console.log(res)
 	return res
+    }
 
-
+    var make_checkers = function(checkers) {
+// x,y,step,radius, color, color_list
+	var y = 1
+	var x = -1
+	var step = 1/4
+	var num_checkers = 0
+	
+	
+	for (let i = 0; i < 3; i++) {
+	    for (let j = 0; j < 8; j++) {
+		// take the y index start at 1 - step 
+		// take the x index start at -1 + step 
+		 
+		circle = circle_calc(x + (j * step), y + (i * step), 0.1, 0.3, vec3(1,0,1), [])
+		colors.push(vec3(1,0.5,0.4))
+		checker_size = circle.length
+		num_checkers += 1
+		checkers = checkers.concat(circle)
+	    }
+	}
+	return [checkers, num_checkers]
     }
 
     var make_boxes = function(row, col) {
 	
-	
 	// Given the parameters convert 
 	//  start at -1,1 add 1/8 to each side
 	//  
+	//
 	var res = []
 	var step = 1/4
 	var count = 0
-	for (let y = 1; y >= -1; y -= step) {
+	var y = 1
+	for (let j = 0; j < 8; j += 1) {
 	    count += 1
 	    for (let i = 0; i < row; i++) {
 		var x = -1	    
@@ -99,10 +124,10 @@ window.onload = function init()
 		if (count % 2 == 0) {
 		    color_i = i % 2 == 0 ? 0 : 1
 		}
-		res.push(vec2(x + (i * step), y))
-		res.push(vec2(x + (i * step) + step, y))
-		res.push(vec2(x + (i * step), y - step))
-		res.push(vec2(x + (i * step) + step, y - step))
+		res.push(vec2(x + (i * step), y - (j * step)))
+		res.push(vec2(x + (i * step) + step, y - (j * step)))
+		res.push(vec2(x + (i * step), y - (j * step) - step))
+		res.push(vec2(x + (i * step) + step, y - (j * step) - step))
 		colors.push(vec3(color_i, color_i, color_i))
 		colors.push(vec3(color_i, color_i, color_i))
 		colors.push(vec3(color_i, color_i, color_i))
@@ -110,18 +135,20 @@ window.onload = function init()
 	    } 
 	}
 
-	console.log(res)
 	return res
 
     }
 
     var colors = []
+    var checkers = []
     colors.push(vec3(0,0,0))
-    shapes.push({"points": make_boxes(8,8)})
+    // shapes.push({"points": make_boxes(8,8)})
+    var checkers_list = make_checkers(checkers)
+    shapes.push({"points": checkers_list[0], "checker_numbers": checkers_list[1]})
+    box_end = shapes[0].length
 
-    console.log(get_points(shapes))
-    console.log(colors)
-
+    // console.log(get_points(shapes))
+    console.log(make_checkers(checkers))
     // Configure WebGL   
     //
     gl.viewport( 0, 0, canvas.width, canvas.height );
@@ -155,8 +182,16 @@ window.onload = function init()
 };
 
 function render() {
+
     gl.clear(gl.COLOR_BUFFER_BIT); 
-    // gl.drawArrays(gl.LINE_LOOP, 0, 3)
-    // gl.drawArrays(gl.TRIANGLES, 3, 3);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, shapes[0].points.length );
+    // gl.drawArrays(gl.TRIANGLE_STRIP, 0, shapes[0].points.length );
+    
+    var start = box_end
+
+    console.log(shapes[0].checker_numbers)
+    for (let i = 0; i < shapes[0].checker_numbers; i++) {
+	// 256 because that is now many points are in the checkerboard
+	 console.log(i * checker_size)
+         gl.drawArrays(gl.TRIANGLE_FAN, 0 + (i * checker_size), checker_size);
+    }
 }
