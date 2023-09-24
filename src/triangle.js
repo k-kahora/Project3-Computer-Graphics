@@ -16,6 +16,43 @@ window.onload = function init()
     gl = canvas.getContext('webgl2');
     if (!gl) { alert( "WebGL 2.0 isn't available" ); }
 
+    var make_boxes = function(colors_list) {
+	
+	// Given the parameters convert 
+	//  start at -1,1 add 1/8 to each side
+	//  
+	//
+	var res = []
+	var step = 1/4
+	var count = 0
+	var y = 1
+	for (let j = 0; j < 8; j += 1) {
+	    count += 1
+	    for (let i = 0; i < row; i++) {
+		var x = -1	    
+		// if y is even then start with 0
+		// odd start with 1
+		var color_i = 0
+		if (count % 2 != 0) {
+		    color_i = i % 2 == 0 ? 1 : 0
+		}
+		if (count % 2 == 0) {
+		    color_i = i % 2 == 0 ? 0 : 1
+		}
+		res.push(vec2(x + (i * step), y - (j * step)))
+		res.push(vec2(x + (i * step) + step, y - (j * step)))
+		res.push(vec2(x + (i * step), y - (j * step) - step))
+		res.push(vec2(x + (i * step) + step, y - (j * step) - step))
+		colors_list.push(vec3(color_i, color_i, color_i))
+		colors_list.push(vec3(color_i, color_i, color_i))
+		colors_list.push(vec3(color_i, color_i, color_i))
+		colors_list.push(vec3(color_i, color_i, color_i))
+	    } 
+	}
+
+	return res
+
+    }
 
     var many_circles = function(color_list) {
 
@@ -81,6 +118,12 @@ window.onload = function init()
     var circle = circle_calc(-0.3,0,0.1,0.5, vec3(0,0,1), color_hollow_circle)
     circle_length = circle.length
 
+    // Board made here
+    var board_colors = []
+    var board = make_boxes(board_colors)
+    var final_list = flatten(board)
+
+    // Checkers made here
     var tons_circles_colors = []
     var tons_circles = many_circles(tons_circles_colors)
     console.log(tons_circles)
@@ -104,7 +147,7 @@ window.onload = function init()
     // Load the data into the GPU       
     var cBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(tons_circles_colors), gl.STATIC_DRAW);
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(board_colors), gl.STATIC_DRAW);
 
     // Associate out shader variables with our data buffer
     var vColor = gl.getAttribLocation(program, "vColor");    
@@ -115,7 +158,7 @@ window.onload = function init()
     var vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
     console.log(flatten(tons_circles).length/2)
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(tons_circles), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, final_list, gl.STATIC_DRAW);
    
     // Associate out shader variables with our data buffer
     var vPosition = gl.getAttribLocation(program, "vPosition");
@@ -128,11 +171,13 @@ window.onload = function init()
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT); 
     // gl.drawArrays(gl.LINE_LOOP, 0, 3)
-    // gl.drawArrays(gl.TRIANGLES, 3, 3);
-    var start = 0
-    for (let i = 0; i <= many_circles_size; i++) {
-      gl.drawArrays(gl.TRIANGLE_FAN, start + (i * many_circles_size), many_circles_size);
-    }
+    //
+
+    // var start = 0
+    // for (let i = 0; i <= many_circles_size; i++) {
+    //   gl.drawArrays(gl.TRIANGLE_FAN, start + (i * many_circles_size), many_circles_size);
+    // }
+
     // gl.drawArrays(gl.TRIANGLE_FAN, circle_length, circle_filled_length);
     // gl.drawArrays(gl.TRIANGLE_STRIP, 126, 4);
 }
