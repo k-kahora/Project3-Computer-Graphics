@@ -28,7 +28,7 @@ window.onload = function init()
 	var y = 1
 	for (let j = 0; j < 8; j += 1) {
 	    count += 1
-	    for (let i = 0; i < row; i++) {
+	    for (let i = 0; i < 8; i++) {
 		var x = -1	    
 		// if y is even then start with 0
 		// odd start with 1
@@ -121,7 +121,9 @@ window.onload = function init()
     // Board made here
     var board_colors = []
     var board = make_boxes(board_colors)
-    var final_list = flatten(board)
+    console.log("here")
+    var final_list = board
+    console.log(board_colors)
 
     // Checkers made here
     var tons_circles_colors = []
@@ -158,7 +160,7 @@ window.onload = function init()
     var vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
     console.log(flatten(tons_circles).length/2)
-    gl.bufferData(gl.ARRAY_BUFFER, final_list, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(board), gl.STATIC_DRAW);
    
     // Associate out shader variables with our data buffer
     var vPosition = gl.getAttribLocation(program, "vPosition");
@@ -172,6 +174,7 @@ function render() {
     gl.clear(gl.COLOR_BUFFER_BIT); 
     // gl.drawArrays(gl.LINE_LOOP, 0, 3)
     //
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 256)
 
     // var start = 0
     // for (let i = 0; i <= many_circles_size; i++) {
