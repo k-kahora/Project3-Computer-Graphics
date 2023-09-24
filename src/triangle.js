@@ -7,6 +7,7 @@ var points;
 var circle_length = 0;
 var circle_filled_length = 0;
 var rect_length = 4;
+var many_circles_size = 0
 
 window.onload = function init()
 {
@@ -15,7 +16,6 @@ window.onload = function init()
     gl = canvas.getContext('webgl2');
     if (!gl) { alert( "WebGL 2.0 isn't available" ); }
 
-    var many_circles_size = 0
 
     var many_circles = function(color_list) {
 
@@ -24,16 +24,19 @@ window.onload = function init()
 	var start_y = 1
 	var step = 0.25
 	for (let y = 0; y < 8; y++) {
-	    for (let x = 0; x < 8; x++) {
+	    for (let x = 0; x < 4; x++) {
 		
 		// The x value is x + half the step
 		// The y values is y - half the step
-		var x_pos = (start_x + (x * step) + (step / 2))
+		var skip_x = y % 2 == 0 ? start_x: start_x + step
+		var x_pos = (skip_x + (x * step * 2) + (step / 2))
 		var y_pos = (start_y - (y * step) - (step / 2))
-		var circle_new = circle_calc(x_pos, y_pos, 0.1, 0.07, vec3(0,1,1), color_list)
-		many_circles_size = circle_new.length
+		if (!(y == 3 || y == 4)) {
+		    var circle_new = circle_calc(x_pos, y_pos, 0.1, 0.07, vec3(0,1,1), color_list)
+		    many_circles_size = circle_new.length
+		    res = res.concat(circle_new)
+		}
 
-		res = res.concat(circle_new)
 	    	
 	    }
 	}
@@ -127,8 +130,8 @@ function render() {
     // gl.drawArrays(gl.LINE_LOOP, 0, 3)
     // gl.drawArrays(gl.TRIANGLES, 3, 3);
     var start = 0
-    for (let i = 0; i < 64; i++) {
-      gl.drawArrays(gl.TRIANGLE_FAN, start + (i * 63), 63);
+    for (let i = 0; i <= many_circles_size; i++) {
+      gl.drawArrays(gl.TRIANGLE_FAN, start + (i * many_circles_size), many_circles_size);
     }
     // gl.drawArrays(gl.TRIANGLE_FAN, circle_length, circle_filled_length);
     // gl.drawArrays(gl.TRIANGLE_STRIP, 126, 4);
