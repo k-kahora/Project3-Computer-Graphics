@@ -74,7 +74,6 @@ window.onload = function init()
 	    }
 		
 	} 
-	console.log(res)
 	return res
     }
 
@@ -139,16 +138,17 @@ window.onload = function init()
 
     }
 
+    var circle_filled = circle_calc(-0.7,0,0.1,0.3, vec3(1,0,1), color_filled_circle)
+
     var colors = []
     var checkers = []
     colors.push(vec3(0,0,0))
     // shapes.push({"points": make_boxes(8,8)})
     var checkers_list = make_checkers(checkers)
+    console.log(checkers_list)
     shapes.push({"points": checkers_list[0], "checker_numbers": checkers_list[1]})
     box_end = shapes[0].length
 
-    // console.log(get_points(shapes))
-    console.log(make_checkers(checkers))
     // Configure WebGL   
     //
     gl.viewport( 0, 0, canvas.width, canvas.height );
@@ -171,7 +171,10 @@ window.onload = function init()
     // Load the data into the GPU       
     var vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(get_points(shapes)), gl.STATIC_DRAW);
+    var list_circ = flatten(get_points(shapes))
+    console.log(list_circ)
+    var test = [0.5, 0.5, 0.1, -0.5, 0.1, 3.5, 0.1, 3.5, 0.1, 3.5,]
+    gl.bufferData(gl.ARRAY_BUFFER, test, gl.STATIC_DRAW);
    
     // Associate out shader variables with our data buffer
     var vPosition = gl.getAttribLocation(program, "vPosition");
@@ -187,11 +190,10 @@ function render() {
     // gl.drawArrays(gl.TRIANGLE_STRIP, 0, shapes[0].points.length );
     
     var start = box_end
+    gl.drawArrays(gl.LINE_LOOP, 1, 30);
 
-    console.log(shapes[0].checker_numbers)
-    for (let i = 0; i < shapes[0].checker_numbers; i++) {
-	// 256 because that is now many points are in the checkerboard
-	 console.log(i * checker_size)
-         gl.drawArrays(gl.TRIANGLE_FAN, 0 + (i * checker_size), checker_size);
-    }
+ //    for (let i = 0; i < shapes[0].checker_numbers; i++) {
+	// // 256 because that is now many points are in the checkerboard
+ //         gl.drawArrays(gl.TRIANGLE_FAN, 0 + (i * checker_size), checker_size);
+ //    }
 }
