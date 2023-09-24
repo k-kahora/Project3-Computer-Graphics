@@ -122,14 +122,18 @@ window.onload = function init()
     var board_colors = []
     var board = make_boxes(board_colors)
     console.log("here")
-    var final_list = board
     console.log(board_colors)
 
     // Checkers made here
     var tons_circles_colors = []
     var tons_circles = many_circles(tons_circles_colors)
-    console.log(tons_circles)
     console.log(many_circles_size)
+
+    // make the super list
+    board = board.concat(tons_circles)
+    console.log(final_list)
+    board_colors = board_colors.concat(tons_circles_colors)
+    console.log(board_colors)
 
     var circle_filled = circle_calc(-0.7,0,0.1,0.3, vec3(1,0,1), color_filled_circle)
     circle_filled_length = circle.length
@@ -176,10 +180,10 @@ function render() {
     //
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 256)
 
-    // var start = 0
-    // for (let i = 0; i <= many_circles_size; i++) {
-    //   gl.drawArrays(gl.TRIANGLE_FAN, start + (i * many_circles_size), many_circles_size);
-    // }
+    var start = 256
+    for (let i = 0; i <= many_circles_size; i++) {
+      gl.drawArrays(gl.TRIANGLE_FAN, start + (i * many_circles_size), many_circles_size);
+    }
 
     // gl.drawArrays(gl.TRIANGLE_FAN, circle_length, circle_filled_length);
     // gl.drawArrays(gl.TRIANGLE_STRIP, 126, 4);
