@@ -69,7 +69,11 @@ window.onload = function init()
 		var x_pos = (skip_x + (x * step * 2) + (step / 2))
 		var y_pos = (start_y - (y * step) - (step / 2))
 		if (!(y == 3 || y == 4)) {
-		    var circle_new = circle_calc(x_pos, y_pos, 0.1, 0.07, vec3(0,1,1), color_list)
+		    if (y < 3) {
+			var circle_new = circle_calc(x_pos, y_pos, 0.1, 0.07, vec3(0,0,0.4), color_list)
+		    } else {
+			var circle_new = circle_calc(x_pos, y_pos, 0.1, 0.07, vec3(0,0.3,1), color_list)
+		    }
 		    many_circles_size = circle_new.length
 		    res = res.concat(circle_new)
 		}
@@ -181,7 +185,8 @@ function render() {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 256)
 
     var start = 256
-    for (let i = 0; i <= many_circles_size; i++) {
+    // their are 24 checkers
+    for (let i = 0; i < 24; i++) {
       gl.drawArrays(gl.TRIANGLE_FAN, start + (i * many_circles_size), many_circles_size);
     }
 
