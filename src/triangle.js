@@ -1,4 +1,4 @@
-// Malcolm Kahora
+// Malcolm Kahora CSC 350
 "use strict";
 
 var gl;
@@ -18,37 +18,34 @@ window.onload = function init()
     gl = canvas.getContext('webgl2');
     if (!gl) { alert( "WebGL 2.0 isn't available" ); }
 
-    var color_hollow_circle = []
-    var color_filled_circle = []
-
-
     var hex2bin = function(hex) {
 	return parseInt(hex, 16).toString(2).padStart(4, 0)
     }
 
+    // Graph walls encode with hex
     var maze_graph = [
 ["9","5","1","5","3","D","5","5","1","5","5","3"],
 ["A","B","A","B","C","3","9","5","6","9","7","A"],
-["8","6","A","C","5","4","2","A","9","2","9","2"],
-["6","9","2","9","3","D","6","8","6","C","6","B"],
-["9","6","E","A","C","5","3","C","3","D","5","2"],
+["8","6","A","C","5","4","2","A","9","2","C","2"],
+["6","9","2","9","3","D","0","8","6","C","6","B"],
+["9","6","E","A","C","5","0","C","3","D","5","2"],
 ["8","5","5","4","5","7","C","3","C","5","3","A"],
 ["A","9","5","3","9","5","5","6","9","7","C","2"],
 ["A","A","B","A","A","D","1","1","6","9","5","6"],
 ["A","A","A","A","C","3","A","A","9","6","D","3"],
 ["A","C","2","C","3","A","E","A","A","D","1","0"],
 ["A","B","A","B","E","C","3","A","C","5","6","A"],
-["C","6","C","4","5","5","6","C","5","5","5","6"]]
+["C","6","C","4","5","5","4","4","5","5","5","6"]]
 
     //var maze_graph = [["8", "8", "8]]
+    //color and point map that get sent to the shader
     var points = []
     var colors = []
+    // converst the hex into binary stinrg
     const final_map = maze_graph.map((element) => element.map((item) => hex2bin(item)))
-    console.log("Bin map")
-    console.log(final_map)
 
     var maze_graph = function(items) {
-	var step = 1/12
+	var step = 1/6
 	for (let j = 0; j < items.length; j++) {
 	    for (let i = 0; i < items[0].length; i++) {
 		var bin = items[j][i]
@@ -92,13 +89,11 @@ window.onload = function init()
 	}
     }
 
+    // Puts the vec2 into the points list
     maze_graph(final_map)
-    console.log(points)
-    console.log(colors)
 
+    // length as global var
     length_points = points.length
-
-
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );   
  
@@ -131,12 +126,5 @@ window.onload = function init()
 
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT); 
-    // gl.drawArrays(gl.LINE_LOOP, 0, 3)
-    //
     gl.drawArrays(gl.LINES, 0, length_points)
-
-    // their are 24 checkers
-
-    // gl.drawArrays(gl.TRIANGLE_FAN, circle_length, circle_filled_length);
-    // gl.drawArrays(gl.TRIANGLE_STRIP, 126, 4);
 }
