@@ -23,26 +23,30 @@ window.onload = function init()
     }
 
     // Graph walls encode with hex
-    var maze_graph = [
-["9","1","1","1","1","1","1","1","1","1","1","3"],
-["8","9","1","5","0","1","1","9","4","3","1","2"],
-["9","5","5","1","3","0","9","6","9","C","5","5"],
-["A","9","2","A","A","0","8","0","6","0","6","2"],
-["A","A","E","A","C","5","0","C","0","0","5","2"],
-["A","C","5","4","5","7","C","3","C","9","5","5"],
-["C","1","5","5","3","5","5","6","9","A","0","2"],
-["8","C","5","3","A","D","1","1","6","A","2","2"],
-["8","5","5","6","8","3","8","5","5","2","2","2"],
-["9","5","5","5","6","A","A","9","0","A","3","2"],
-["A","D","5","5","5","6","0","0","C","5","6","2"],
-["C","5","5","5","5","5","6","4","4","4","4","6"]]
+
+    var maze_graph_string = 
+`911111111113
+891501194312
+955130969C55
+A92AA0806062
+AAEAC50C0052
+AC5457C3C955
+C15535569A02
+8C53AD116A22
+855683855222
+95556AA90A32
+AD555600C562
+C55555644446`
+
+
+    var final_map = maze_graph_string.split("\n").map((element) => element.split("").map((x) => hex2bin(x)))
+    console.log(final_map)
 
     //var maze_graph = [["8", "8", "8]]
     //color and point map that get sent to the shader
     var points = []
     var colors = []
     // converst the hex into binary stinrg
-    const final_map = maze_graph.map((element) => element.map((item) => hex2bin(item)))
 
     var maze_graph = function(items) {
 	var step = 1/6
@@ -55,7 +59,6 @@ window.onload = function init()
 		var y_end = 1 - (j * step) - step
 	    // up
 		if (bin[3] == "1") {
-		    console.log("here")
 		    points.push(vec2(x_start, y_start))	
 		    points.push(vec2(x_end, y_start))	
 		    colors.push(vec3(1,0.5,0.3))
@@ -63,7 +66,6 @@ window.onload = function init()
 		}
 	    // rigt
 		if (bin[2] == "1") {
-		    console.log("here")
 		    points.push(vec2(x_end, y_start))	
 		    points.push(vec2(x_end, y_end))	
 		    colors.push(vec3(1,0.5,0.3))
@@ -71,7 +73,6 @@ window.onload = function init()
 		}
 		// down
 		if (bin[1] == "1") {
-		    console.log("here")
 		    points.push(vec2(x_end, y_end))	
 		    points.push(vec2(x_start, y_end))	
 		    colors.push(vec3(1,0.5,0.3))
@@ -79,7 +80,6 @@ window.onload = function init()
 		}
 		// left
 		if (bin[0] == "1") {
-		    console.log("here")
 		    points.push(vec2(x_start, y_end))	
 		    points.push(vec2(x_start, y_start))	
 		    colors.push(vec3(1,0.5,0.3))
