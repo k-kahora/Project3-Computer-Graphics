@@ -22,6 +22,55 @@ window.onload = function init()
 	return parseInt(hex, 16).toString(2).padStart(4, 0)
     }
 
+    var circle_calc = function (x,y,step,radius, color, color_list) {
+	var returnList = []
+	for (let i = 0; i <= 6.28; i+=step) {
+	    returnList.push(vec2(radius * Math.cos(i) + x, radius * Math.sin(i) + y))
+	    color_list.push(color)
+	}
+	return returnList
+    }
+
+
+    // Movement should be broken down as so
+    // read the binary restrict movement only go in a 0 direction
+    //
+    //
+    function mapToRange(num, minOutput, maxOutput) {
+	if (num < 0 || num > 12) {
+	    throw new Error("Input number must be between 0 and 12");
+	}
+
+	// Map the input number to the range [-0.95, 0.95]
+	const minInput = 0;
+	const maxInput = 12;
+
+	const scaledValue = (num - minInput) / (maxInput - minInput);
+	const result = (scaledValue * (maxOutput - minOutput)) + minOutput;
+
+	return result;
+    }
+    var map_to_center = function (row, col) {
+	return [lerp(-0.95,0.95,col), lerp(0.95,-0.95,row)]
+    }
+
+    window.onkeydown = function (event) {
+	    switch (event.key) {
+	    case "ArrowRight":
+		console.log("right")
+		break
+	    case "ArrowLeft":
+		console.log("left")
+		break
+	    case "ArrowUp":
+		console.log("up")
+		break
+	    case "ArrowDown":
+		console.log("down")
+		break
+	    }
+    }
+
     // Graph walls encode with hex
 
     var maze_graph_string = 
@@ -40,7 +89,6 @@ C55555644446`
 
 
     var final_map = maze_graph_string.split("\n").map((element) => element.split("").map((x) => hex2bin(x)))
-    console.log(final_map)
 
     //var maze_graph = [["8", "8", "8]]
     //color and point map that get sent to the shader
@@ -92,8 +140,20 @@ C55555644446`
     // Puts the vec2 into the points list
     maze_graph(final_map)
 
+    var border = 1 - 1/12
+    console.log(border)
+    var start =   [mapToRange(11,-border, border),mapToRange(0,border, -border)]
+    console.log(start)
+    var radius = 0.05
+    var precision = 0.1
+    var color_hollow_circle = []
+    var circle = circle_calc(start[0], start[1],precision,radius, vec3(0,0,1), color_hollow_circle)
+    circle_length = circle.length
+
     // length as global var
     length_points = points.length
+    colors = colors.concat(color_hollow_circle)
+    points = points.concat(circle)
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );   
  
@@ -127,4 +187,6 @@ C55555644446`
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT); 
     gl.drawArrays(gl.LINES, 0, length_points)
+    gl.drawArrays(gl.TRIANGLE_FAN, length_points, circle_length)
+    
 }
