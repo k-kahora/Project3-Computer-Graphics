@@ -15,7 +15,7 @@ uniform mat4 modelViewMatrix;
 
 void main()
 {
-    gl_Position = vPosition;
+    gl_Position = modelViewMatrix * vPosition;
     color = vec4(vColor, 1.0);
 }
 </script>

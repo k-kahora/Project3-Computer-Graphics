@@ -76,15 +76,15 @@ window.onload = function init()
 	    }
 	    // clamp row and col within 0 and 12
 	let clamp = (d, m, ma) => Math.max(m,Math.min(ma, d))
-	row = clamp(row, 0, 12)
-	col = clamp(col, 0, 12)
+	row = clamp(row, 0, 11)
+	col = clamp(col, 0, 11)
 	
 	border = 1/12
 	var interpolate = function (x, x0, x1, y0, y1) {
 	    return y0 + (x - x0) * ((y1 - y0) / (x1 - x0))
 	}
-	var y = interpolate(row, 0, 11, (1 - border), (-1 + border))
-	var x = interpolate(col, 0, 11, (-1 + border), (1 - border))
+	cur_y = interpolate(row, 0, 11, (1 - border), (-1 + border))
+	cur_x = interpolate(col, 0, 11, (-1 + border), (1 - border))
 
 
    
@@ -212,18 +212,20 @@ C55555644446`
 };
 
 function render() {
+    console.log(cur_y)
     gl.clear(gl.COLOR_BUFFER_BIT); 
+    var ctm = mat4()
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
     gl.drawArrays(gl.LINES, 0, length_points)
 
-    var ctm = mat4()
 
     ctm = mult(ctm, translate(cur_x, cur_y, 0))
-
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+
     gl.drawArrays(gl.TRIANGLE_FAN, length_points, circle_length)
 
     setTimeout(
-       function (){requestAnimationFrame(render);}, 1000
+       function (){requestAnimationFrame(render);}, 100
     );
     
 }
