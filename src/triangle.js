@@ -5,8 +5,8 @@ var gl;
 var points;
 
 
-var row = 0
-var col = 0
+var row = 2
+var col = 11
 var cur_x = 0
 var cur_y = 0
 
@@ -59,25 +59,37 @@ window.onload = function init()
     }
 
     window.onkeydown = function (event) {
+	var current_spot = final_map[row][col]
+	
+	console.log(current_spot)
 	    switch (event.key) {
 	    case "ArrowRight":
-		col += 1
-		// var start = [mapToRange(11,-border, border),mapToRange(0,border, -border)]
+		if (current_spot[2] != "1") {
+		    col += 1
+		}
+
 		break
 	    case "ArrowLeft":
-		col -= 1
+		if (current_spot[0] != "1") {
+		    col -= 1
+		}
 		break
 	    case "ArrowUp":
-		row -= 1
+		if (current_spot[3] != "1") {
+		    row -= 1
+		}
 		break
 	    case "ArrowDown":
-		row += 1
+		if (current_spot[1] != "1") {
+		    row += 1
+		}
 		break
 	    }
 	    // clamp row and col within 0 and 12
 	let clamp = (d, m, ma) => Math.max(m,Math.min(ma, d))
 	row = clamp(row, 0, 11)
 	col = clamp(col, 0, 11)
+	
 	
 	border = 1/12
 	var interpolate = function (x, x0, x1, y0, y1) {
@@ -89,8 +101,6 @@ window.onload = function init()
 
    
 
-	console.log(circle)
-	console.log(col)
 	    // update the ctm
 
     }
@@ -101,16 +111,16 @@ window.onload = function init()
     var color_hollow_circle = []
     var maze_graph_string = 
 `911111111113
-891501194312
-955130969C55
-A92AA0806062
-AAEAC50C0052
+891541194312
+95513A969C55
+A92AAE816962
+AAEAC52C1452
 AC5457C3C955
 C15535569A02
 8C53AD116A22
 855683855222
 95556AA90A32
-AD555600C562
+AD555682C562
 C55555644446`
 
 
@@ -212,7 +222,6 @@ C55555644446`
 };
 
 function render() {
-    console.log(cur_y)
     gl.clear(gl.COLOR_BUFFER_BIT); 
     var ctm = mat4()
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
