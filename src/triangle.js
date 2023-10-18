@@ -3,12 +3,19 @@
 
 var gl;
 var points;
-
+var border = 1 / 12
 
 var row = 2
 var col = 11
-var cur_x = 0
-var cur_y = 0
+var interpolate = function (x, x0, x1, y0, y1) {
+    return y0 + (x - x0) * ((y1 - y0) / (x1 - x0))
+}
+
+var finished = false
+var cur_y = interpolate(row, 0, 11, (1 - border), (-1 + border))
+var cur_x = interpolate(col, 0, 11, (-1 + border), (1 - border))
+
+
 
 var circle_length = 0;
 var circle_filled_length = 0;
@@ -60,46 +67,64 @@ window.onload = function init()
 
     window.onkeydown = function (event) {
 	var current_spot = final_map[row][col]
+	var clamp = (d, m, ma) => Math.max(m,Math.min(ma, d))
 	
 	console.log(current_spot)
 	    switch (event.key) {
 	    case "ArrowRight":
 		if (current_spot[2] != "1") {
-		    col += 1
+		    col = clamp(col + 1, 0, 11)
+		    var new_spot = final_map[row][col]
+		    if (new_spot[0] == "1") { // if the next spot does not conain a 1 they can progress
+			col -= 1
+		    }
+
+			
 		}
 
 		break
 	    case "ArrowLeft":
 		if (current_spot[0] != "1") {
-		    col -= 1
+		    col = clamp(col - 1, 0, 11)
+		    var new_spot = final_map[row][col]
+		    if (new_spot[2] == "1") { // if the next spot does not conain a 1 they can progress
+			col += 1
+		    }
+
 		}
 		break
 	    case "ArrowUp":
 		if (current_spot[3] != "1") {
-		    row -= 1
+		    row = clamp(row - 1, 0, 11)
+		    var new_spot = final_map[row][col]
+		    if (new_spot[1] == "1") { // if the next spot does not conain a 1 they can progress
+			row += 1
+		    }
+
 		}
 		break
 	    case "ArrowDown":
 		if (current_spot[1] != "1") {
-		    row += 1
+		    row = clamp(row + 1, 0, 11)
+		    var new_spot = final_map[row][col]
+		    if (new_spot[3] == "1") { // if the next spot does not conain a 1 they can progress
+			row -= 1 
+		    }
 		}
 		break
 	    }
+	if (row == 5 && col == 11) {
+	    finished = true
+	}
 	    // clamp row and col within 0 and 12
-	let clamp = (d, m, ma) => Math.max(m,Math.min(ma, d))
 	row = clamp(row, 0, 11)
 	col = clamp(col, 0, 11)
+	console.log(row)
 	
 	
 	border = 1/12
-	var interpolate = function (x, x0, x1, y0, y1) {
-	    return y0 + (x - x0) * ((y1 - y0) / (x1 - x0))
-	}
 	cur_y = interpolate(row, 0, 11, (1 - border), (-1 + border))
 	cur_x = interpolate(col, 0, 11, (-1 + border), (1 - border))
-
-
-   
 
 	    // update the ctm
 
@@ -228,7 +253,7 @@ function render() {
     gl.drawArrays(gl.LINES, 0, length_points)
 
 
-    ctm = mult(ctm, translate(cur_x, cur_y, 0))
+    ctm = finished ? mult(ctm, translate(0, 0, 0)) : mult(ctm, translate(cur_x, cur_y, 0))
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
 
     gl.drawArrays(gl.TRIANGLE_FAN, length_points, circle_length)
