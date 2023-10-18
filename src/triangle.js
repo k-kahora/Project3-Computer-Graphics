@@ -4,10 +4,17 @@
 var gl;
 var points;
 
+
+var row = 0
+var col = 0
+var cur_x = 0
+var cur_y = 0
+
 var circle_length = 0;
 var circle_filled_length = 0;
 var rect_length = 4;
 var many_circles_size = 0
+var modelViewMatrixLoc;
 
 var length_points = 0
 
@@ -50,29 +57,48 @@ window.onload = function init()
 
 	return result;
     }
-    var map_to_center = function (row, col) {
-	return [lerp(-0.95,0.95,col), lerp(0.95,-0.95,row)]
-    }
 
     window.onkeydown = function (event) {
 	    switch (event.key) {
 	    case "ArrowRight":
-		console.log("right")
+		col += 1
+		// var start = [mapToRange(11,-border, border),mapToRange(0,border, -border)]
 		break
 	    case "ArrowLeft":
-		console.log("left")
+		col -= 1
 		break
 	    case "ArrowUp":
-		console.log("up")
+		row -= 1
 		break
 	    case "ArrowDown":
-		console.log("down")
+		row += 1
 		break
 	    }
+	    // clamp row and col within 0 and 12
+	let clamp = (d, m, ma) => Math.max(m,Math.min(ma, d))
+	row = clamp(row, 0, 12)
+	col = clamp(col, 0, 12)
+	
+	border = 1/12
+	var interpolate = function (x, x0, x1, y0, y1) {
+	    return y0 + (x - x0) * ((y1 - y0) / (x1 - x0))
+	}
+	var y = interpolate(row, 0, 11, (1 - border), (-1 + border))
+	var x = interpolate(col, 0, 11, (-1 + border), (1 - border))
+
+
+   
+
+	console.log(circle)
+	console.log(col)
+	    // update the ctm
+
     }
 
     // Graph walls encode with hex
 
+    var circle = []
+    var color_hollow_circle = []
     var maze_graph_string = 
 `911111111113
 891501194312
@@ -141,15 +167,14 @@ C55555644446`
     maze_graph(final_map)
 
     var border = 1 - 1/12
-    console.log(border)
-    var start =   [mapToRange(11,-border, border),mapToRange(0,border, -border)]
-    console.log(start)
+    var start = [mapToRange(0,-border, border),mapToRange(0,border, -border)]
     var radius = 0.05
     var precision = 0.1
-    var color_hollow_circle = []
-    var circle = circle_calc(start[0], start[1],precision,radius, vec3(0,0,1), color_hollow_circle)
-    circle_length = circle.length
 
+    var circle = circle_calc(0,0,precision,radius, vec3(0,0,1), color_hollow_circle)
+    circle_length = circle.length
+    colors = colors.concat(color_hollow_circle)
+    points = points.concat(circle)
     // length as global var
     length_points = points.length
     colors = colors.concat(color_hollow_circle)
@@ -181,12 +206,24 @@ C55555644446`
     gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);    
 
+    modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
+
     render();
 };
 
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT); 
     gl.drawArrays(gl.LINES, 0, length_points)
+
+    var ctm = mat4()
+
+    ctm = mult(ctm, translate(cur_x, cur_y, 0))
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
     gl.drawArrays(gl.TRIANGLE_FAN, length_points, circle_length)
+
+    setTimeout(
+       function (){requestAnimationFrame(render);}, 1000
+    );
     
 }
