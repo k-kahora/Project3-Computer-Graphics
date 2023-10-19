@@ -4,18 +4,19 @@
 var gl;
 var points;
 var border = 1 / 12
+var line_size = 1
 
 var row = 2
 var col = 11
+
 var interpolate = function (x, x0, x1, y0, y1) {
     return y0 + (x - x0) * ((y1 - y0) / (x1 - x0))
 }
 
 var finished = false
+// Start at the begining
 var cur_y = interpolate(row, 0, 11, (1 - border), (-1 + border))
 var cur_x = interpolate(col, 0, 11, (-1 + border), (1 - border))
-
-
 
 var circle_length = 0;
 var circle_filled_length = 0;
@@ -48,36 +49,24 @@ window.onload = function init()
 
     // Movement should be broken down as so
     // read the binary restrict movement only go in a 0 direction
-    //
-    //
-    function mapToRange(num, minOutput, maxOutput) {
-	if (num < 0 || num > 12) {
-	    throw new Error("Input number must be between 0 and 12");
-	}
-
-	// Map the input number to the range [-0.95, 0.95]
-	const minInput = 0;
-	const maxInput = 12;
-
-	const scaledValue = (num - minInput) / (maxInput - minInput);
-	const result = (scaledValue * (maxOutput - minOutput)) + minOutput;
-
-	return result;
-    }
 
     var path = []
     var index = 0
+
+    //  place a point to finish the path
     var place_point = function(x,y) {
-	path.push(vec2(x,y))
-        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
-        gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(vec2(x,y)));
+	points.push(vec2(x,y))
+	colors.push(vec3(0,0,0))
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 16*index, flatten(vec4(0,1,1,1)));
-        index++;
+	gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
+	gl.bufferData( gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
+	gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
+
+	line_size += 1
+
+	render()
     }
-
-
 
     window.onkeydown = function (event) {
 	var current_spot = final_map[row][col]
@@ -89,13 +78,11 @@ window.onload = function init()
 		if (current_spot[2] != "1") {
 		    col = clamp(col + 1, 0, 11)
 		    var new_spot = final_map[row][col]
+		    // Looks ahead to make sure there is no wall
 		    if (new_spot[0] == "1") { // if the next spot does not conain a 1 they can progress
 			col -= 1
 		    }
-
-			
 		}
-
 		break
 	    case "ArrowLeft":
 		if (current_spot[0] != "1") {
@@ -130,18 +117,19 @@ window.onload = function init()
 	if (row == 5 && col == 11) {
 	    finished = true
 	}
-	    // clamp row and col within 0 and 12
+	// clamp row and col within 0 and 12
 	row = clamp(row, 0, 11)
 	col = clamp(col, 0, 11)
 	console.log(row)
 	
 	
+	// turn row and cols into x and y
 	border = 1/12
 	cur_y = interpolate(row, 0, 11, (1 - border), (-1 + border))
 	cur_x = interpolate(col, 0, 11, (-1 + border), (1 - border))
 	place_point(cur_x, cur_y)
 
-	    // update the ctm
+	// update the ctm
 
     }
 
@@ -217,18 +205,19 @@ C55555644446`
     maze_graph(final_map)
 
     var border = 1 - 1/12
-    var start = [mapToRange(0,-border, border),mapToRange(0,border, -border)]
     var radius = 0.05
     var precision = 0.1
 
     var circle = circle_calc(0,0,precision,radius, vec3(0,0,1), color_hollow_circle)
     circle_length = circle.length
-    colors = colors.concat(color_hollow_circle)
-    points = points.concat(circle)
-    // length as global var
     length_points = points.length
     colors = colors.concat(color_hollow_circle)
     points = points.concat(circle)
+    // length as global var
+
+    points.push(vec2(cur_x,cur_y))
+    colors.push(vec3(0,0,0))
+
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );   
  
@@ -257,21 +246,28 @@ C55555644446`
     gl.enableVertexAttribArray(vPosition);    
 
     modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
-
     render();
 };
 
 function render() {
+
     gl.clear(gl.COLOR_BUFFER_BIT); 
+
+    // The maze itself
     var ctm = mat4()
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
     gl.drawArrays(gl.LINES, 0, length_points)
 
 
+    // The circle
     ctm = finished ? mult(ctm, translate(0, 0, 0)) : mult(ctm, translate(cur_x, cur_y, 0))
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
-
     gl.drawArrays(gl.TRIANGLE_FAN, length_points, circle_length)
+
+    // The path
+    ctm = mat4()
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+    gl.drawArrays(gl.LINE_STRIP, length_points + circle_length, line_size )
 
     setTimeout(
        function (){requestAnimationFrame(render);}, 100
