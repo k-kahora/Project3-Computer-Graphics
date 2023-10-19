@@ -65,6 +65,20 @@ window.onload = function init()
 	return result;
     }
 
+    var path = []
+    var index = 0
+    var place_point = function(x,y) {
+	path.push(vec2(x,y))
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
+        gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(vec2(x,y)));
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 16*index, flatten(vec4(0,1,1,1)));
+        index++;
+    }
+
+
+
     window.onkeydown = function (event) {
 	var current_spot = final_map[row][col]
 	var clamp = (d, m, ma) => Math.max(m,Math.min(ma, d))
@@ -125,6 +139,7 @@ window.onload = function init()
 	border = 1/12
 	cur_y = interpolate(row, 0, 11, (1 - border), (-1 + border))
 	cur_x = interpolate(col, 0, 11, (-1 + border), (1 - border))
+	place_point(cur_x, cur_y)
 
 	    // update the ctm
 
