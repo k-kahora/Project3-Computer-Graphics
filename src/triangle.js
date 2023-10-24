@@ -1,10 +1,23 @@
 // Malcolm Kahora CSC 350
 "use strict";
 
+// Remove the cur_x and cur_y translations
+// Make a angle var that increas wheneve right or left is pressed
+// Only translate on up arrow
+// Done
+
 var gl;
 var points;
 var border = 1 / 12
 var line_size = 1
+
+const Direction = {
+    RIGHT: 0,
+    LEFT: 1,
+    UP: 2
+}
+
+var direction = Direction.UP
 
 var row = 2
 var col = 11
@@ -72,7 +85,6 @@ window.onload = function init()
 	var current_spot = final_map[row][col]
 	var clamp = (d, m, ma) => Math.max(m,Math.min(ma, d))
 	
-	console.log(current_spot)
 	    switch (event.key) {
 	    case "ArrowRight":
 		if (current_spot[2] != "1") {
@@ -83,6 +95,7 @@ window.onload = function init()
 			col -= 1
 		    }
 		}
+		direction = Direction.RIGHT
 		break
 	    case "ArrowLeft":
 		if (current_spot[0] != "1") {
@@ -93,6 +106,7 @@ window.onload = function init()
 		    }
 
 		}
+		direction = Direction.LEFT
 		break
 	    case "ArrowUp":
 		if (current_spot[3] != "1") {
@@ -103,6 +117,8 @@ window.onload = function init()
 		    }
 
 		}
+		direction = Direction.UP
+
 		break
 	    case "ArrowDown":
 		if (current_spot[1] != "1") {
@@ -120,7 +136,6 @@ window.onload = function init()
 	// clamp row and col within 0 and 12
 	row = clamp(row, 0, 11)
 	col = clamp(col, 0, 11)
-	console.log(row)
 	
 	
 	// turn row and cols into x and y
@@ -265,13 +280,19 @@ function render() {
 
     // The circle
     ctm = finished ? mult(ctm, translate(0, 0, 0)) : mult(ctm, translate(cur_x, cur_y, 0))
+    if (direction == Direction.RIGHT) {
+	ctm = mult(ctm, rotateZ(-90))
+    }
+    if (direction == Direction.LEFT) {
+	ctm = mult(ctm, rotateZ(90))
+    }
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
     gl.drawArrays(gl.TRIANGLE_FAN, length_points, circle_length)
 
+
     // The face
-    ctm = mat4()
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
-    gl.drawArrays(gl.LINE_LOOP, circle_length + length_points, 3)
+    gl.drawArrays(gl.TRIANGLE_FAN, circle_length + length_points, 3)
+
 
 
     // The path
