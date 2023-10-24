@@ -209,10 +209,14 @@ C55555644446`
     var precision = 0.1
 
     var circle = circle_calc(0,0,precision,radius, vec3(0,0,1), color_hollow_circle)
+
+    var face = [vec2(-0.1,0), vec2(0,0.1), vec2(0.1,0)]
+    var face_color = [vec3(1,0,1), vec3(1,0.5,0), vec3(0.3,1,0.06)]
+
     circle_length = circle.length
     length_points = points.length
-    colors = colors.concat(color_hollow_circle)
-    points = points.concat(circle)
+    colors = colors.concat(color_hollow_circle).concat(face_color)
+    points = points.concat(circle).concat(face)
     // length as global var
 
     points.push(vec2(cur_x,cur_y))
@@ -264,10 +268,16 @@ function render() {
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
     gl.drawArrays(gl.TRIANGLE_FAN, length_points, circle_length)
 
+    // The face
+    ctm = mat4()
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+    gl.drawArrays(gl.LINE_LOOP, circle_length + length_points, 3)
+
+
     // The path
     ctm = mat4()
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
-    gl.drawArrays(gl.LINE_STRIP, length_points + circle_length, line_size )
+    gl.drawArrays(gl.LINE_STRIP, length_points + circle_length + 3, line_size )
 
     setTimeout(
        function (){requestAnimationFrame(render);}, 100
