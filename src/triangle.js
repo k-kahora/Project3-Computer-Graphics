@@ -11,10 +11,13 @@ var points;
 var border = 1 / 12
 var line_size = 1
 
+var theta = 0
+
 const Direction = {
-    RIGHT: 0,
-    LEFT: 1,
-    UP: 2
+    UP: 3,
+    RIGHT: 2,
+    DOWN: 1,
+    LEFT: 0
 }
 
 var direction = Direction.UP
@@ -87,56 +90,53 @@ window.onload = function init()
 	
 	    switch (event.key) {
 	    case "ArrowRight":
-		if (current_spot[2] != "1") {
-		    col = clamp(col + 1, 0, 11)
-		    var new_spot = final_map[row][col]
-		    // Looks ahead to make sure there is no wall
-		    if (new_spot[0] == "1") { // if the next spot does not conain a 1 they can progress
-			col -= 1
-		    }
-		}
-		direction = Direction.RIGHT
+		theta -= 90
 		break
 	    case "ArrowLeft":
-		if (current_spot[0] != "1") {
-		    col = clamp(col - 1, 0, 11)
-		    var new_spot = final_map[row][col]
-		    if (new_spot[2] == "1") { // if the next spot does not conain a 1 they can progress
-			col += 1
-		    }
-
-		}
-		direction = Direction.LEFT
+		theta += 90
 		break
 	    case "ArrowUp":
-		if (current_spot[3] != "1") {
-		    row = clamp(row - 1, 0, 11)
-		    var new_spot = final_map[row][col]
-		    if (new_spot[1] == "1") { // if the next spot does not conain a 1 they can progress
-			row += 1
-		    }
 
-		}
-		direction = Direction.UP
+		let angle_deg = theta * (Math.PI / 180)
+		let cur_dir = [-Math.cos(angle_deg), -Math.sin(angle_deg), Math.cos(angle_deg), Math.sin(angle_deg)]
+		let cur_index = cur_dir.findIndex(d => d == 1)
+		let n_col = col
+		let n_row = row
 
-		break
-	    case "ArrowDown":
-		if (current_spot[1] != "1") {
-		    row = clamp(row + 1, 0, 11)
-		    var new_spot = final_map[row][col]
-		    if (new_spot[3] == "1") { // if the next spot does not conain a 1 they can progress
-			row -= 1 
-		    }
+		switch (cur_index) {
+		    case 3:
+			n_row = clamp(n_row - 1, 0, 11)
+			console.log("UP")
+		    break;
+		    case 2:
+			n_col = clamp(n_col + 1, 0, 11)
+			console.log("RIGHT")
+		    break;
+		    case 1:
+			n_row = clamp(n_row + 1, 0, 11)
+			console.log("DOWN")
+		    break;
+		    case 0:
+			n_col = clamp(n_col - 1, 0, 11)
+			console.log("LEFT")
+		    break;
 		}
+		if (current_spot[cur_index] == "1" || final_map[n_row][n_col] == "1") {
+		    row = clamp(row, 0, 11)
+		    col = clamp(col, 0, 11)
+		} else {
+		    row = clamp(n_row, 0, 11)
+		    col = clamp(n_col, 0, 11)
+		}
+
 		break
 	    }
 	if (row == 5 && col == 11) {
 	    finished = true
 	}
 	// clamp row and col within 0 and 12
-	row = clamp(row, 0, 11)
-	col = clamp(col, 0, 11)
 	
+	console.log(row)
 	
 	// turn row and cols into x and y
 	border = 1/12
@@ -280,17 +280,15 @@ function render() {
 
     // The circle
     ctm = finished ? mult(ctm, translate(0, 0, 0)) : mult(ctm, translate(cur_x, cur_y, 0))
-    if (direction == Direction.RIGHT) {
-	ctm = mult(ctm, rotateZ(-90))
-    }
-    if (direction == Direction.LEFT) {
-	ctm = mult(ctm, rotateZ(90))
-    }
+    ctm = finished ? mult(ctm, rotateZ(90)) : mult(ctm, rotateZ(theta)) 
+    //         Left		     Down		   Right                Up
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
     gl.drawArrays(gl.TRIANGLE_FAN, length_points, circle_length)
 
 
     // The face
+    ctm = mult(ctm, rotateZ(-90))
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
     gl.drawArrays(gl.TRIANGLE_FAN, circle_length + length_points, 3)
 
 
