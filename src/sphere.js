@@ -13,6 +13,7 @@ var vertices = [];
 var colors = [];
 
 var toggleCircle = false
+var tagged = false
 
 var va = vec4(0.0, 0.0, -1.0,1);
 var vb = vec4(0.0, 0.942809, 0.333333, 1);
@@ -151,7 +152,9 @@ function angle(v1, v2) {
 	let mag_v2 = Math.sqrt(v2[0] ** 2 + v2[1] ** 2 + v2[2] ** 2)
 	let angle = Math.acos(dot_product/ (mag_v2 * mag_v1))
 	return angle * (180 / Math.PI)
-
+}
+function magnitude(v1) {
+    return Math.sqrt(v1[0] ** 2 + v1[1] ** 2 + v1[2] ** 2)
 }
 
 var axis = 0
@@ -173,14 +176,30 @@ function render() {
 	// ctm = mult(ctm, rotate(ange, cross(tip_pointing, v3)))
 	// ange = 450 
     if (toggleCircle) {
-	px += v3[0]/80
-	py += v3[1]/80
-	pz += v3[2]/80
+	v3 = normalize(v3)
+	px += v3[0]/50
+	py += v3[1]/50
+	pz += v3[2]/50
     }
+    if (tagged) {
+	px = 0
+	py = 0
+	pz = 0
+	ctm = mult(ctm, rotateZ(0))
+
+    } else {
     ctm = mult(ctm, translate(px,py,pz))
 	ctm = mult(ctm, rotate(ange, cross(v3,vec4(0,1,0,0))))
+    }
 //	tip_pointing = mult(rotate(ange, cross(v3, tip_pointing)), tip_pointing)
 
+    let ctl = ctm
+    let tip_p = mult(ctl, vec4(0,0.1,0,1))
+    let ballxyz = vec4(dx,dy,dz,1)
+    if ( magnitude( subtract(tip_p, ballxyz)) < 0.03) {
+	tagged = true
+	console.log("tagged")
+    }
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
 
     // if the tip of the pyraid si within the radius of the circle then delete the circle
@@ -196,6 +215,7 @@ function render() {
 	dy += vy
 	dz += vz
     }
+    // If the pyramids tip is within range of the balls center delete the ball and transtformthe pyramid
 
 	ctm = mult(ctm, translate(dx,dy,dz))
 
@@ -210,10 +230,13 @@ function render() {
 	}
 
     if (toggleCircle) {
+	
 	ctm = mult(ctm, scale(0.2,0.2,0.2))
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+	if (!tagged) {
     for( var i=16; i<index; i+=3)
         gl.drawArrays(gl.LINE_LOOP, i, 3);
+	}
     }
 
 	requestAnimationFrame(render);
