@@ -19,6 +19,23 @@ var vd = vec4(0.816497, -0.471405, 0.333333,1);
 var ctm;
 var x, y, z, dx, dy, dz;
 
+function pyramid() {
+	let bottom_left = vec4(-0.1,0,0.1,1)
+	let bottom_right = vec4(0.1,0,0.1,1)
+	let top_right = vec4(0.1,0,-0.1,1)
+	let top_left = vec4(-0.1,0,-0.1,1)
+	let tip = vec4(0,0.1,0,1)
+	vertices = vertices.concat([bottom_left, bottom_right, top_right, top_left])
+	vertices = vertices.concat([bottom_left, bottom_right, tip])
+	vertices = vertices.concat([bottom_right, top_right, tip])
+	vertices = vertices.concat([top_right, top_left, tip])
+	vertices = vertices.concat([top_left, bottom_left, tip])
+	colors = colors.concat([vec3(0,1,0), vec3(0,1,0), vec3(1,1,0), vec3(1,1,0)])
+	colors = colors.concat([vec3(0,1,0), vec3(0,1,0), vec3(1,1,0)])
+	colors = colors.concat([vec3(0,1,0), vec3(0,1,0), vec3(1,1,0)])
+	colors = colors.concat([vec3(0,1,0), vec3(0,1,0), vec3(1,1,0)])
+}
+
 function triangle(a, b, c) {
 
      vertices.push(a);
@@ -82,6 +99,10 @@ window.onload = function init() {
     dx = 0.05*Math.random();
     dy = 0.05*Math.random();
     dz = 0.05*Math.random();
+	
+	console.log(vertices.length)
+	pyramid()
+	console.log(vertices.length)
 
     //triangle(va, vb, vc);
 
@@ -113,6 +134,12 @@ function render() {
 
     for( var i=0; i<index; i+=3)
         gl.drawArrays(gl.LINE_LOOP, i, 3);
+
+
+	gl.drawArrays(gl.TRIANGLE_FAN, index, 4)
+	gl.drawArrays(gl.TRIANGLE_FAN, index +4,3 )
+	gl.drawArrays(gl.TRIANGLE_FAN, index +7,3 )
+	gl.drawArrays(gl.TRIANGLE_FAN, index +10,3 )
 
 }
 
