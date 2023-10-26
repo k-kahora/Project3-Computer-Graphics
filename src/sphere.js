@@ -8,9 +8,11 @@ var program;
 var modelViewMatrixLoc;
 var numTimesToSubdivide = 3;
 var radius = 0.1
-var index = 0;
+var index = 16;
 var vertices = [];
 var colors = [];
+
+var toggleCircle = false
 
 var va = vec4(0.0, 0.0, -1.0,1);
 var vb = vec4(0.0, 0.942809, 0.333333, 1);
@@ -20,22 +22,28 @@ var vd = vec4(0.816497, -0.471405, 0.333333,1);
 var ctm;
 var x, y, z, dx, dy, dz, vx, vy, vz, px, py, pz;
 
+
 function pyramid() {
 	let bottom_left = vec4(-0.1,0,0.1,1)
 	let bottom_right = vec4(0.1,0,0.1,1)
 	let top_right = vec4(0.1,0,-0.1,1)
 	let top_left = vec4(-0.1,0,-0.1,1)
 	let tip = vec4(0,0.1,0,1)
-	vertices = vertices.concat([bottom_left, bottom_right, top_right, top_left])
-	vertices = vertices.concat([bottom_left, bottom_right, tip])
-	vertices = vertices.concat([bottom_right, top_right, tip])
-	vertices = vertices.concat([top_right, top_left, tip])
-	vertices = vertices.concat([top_left, bottom_left, tip])
-	colors = colors.concat([vec3(0,1,0), vec3(0,1,0), vec3(0,1,0), vec3(0,1,0)])
-	colors = colors.concat([vec3(0.1,0.3,0), vec3(0.1,0.3,0), vec3(0.1,0.3,0)])
-	colors = colors.concat([vec3(0,1,0.8), vec3(0,1,0.8), vec3(0,1,0.8)])
-	colors = colors.concat([vec3(1,1,0), vec3(1,1,0), vec3(1,1,0)])
-	colors = colors.concat([vec3(0.3,0.5,0.1), vec3(0.3,0.5,0.1), vec3(0.3,0.5,0.1)])
+
+    // The order has to be reversed due to conctaing in the front
+
+    vertices = [top_left, bottom_left, tip].concat(vertices)
+    vertices = [top_right, top_left, tip].concat(vertices)
+    vertices = [bottom_right, top_right, tip].concat(vertices)
+    vertices = [bottom_left, bottom_right, tip].concat(vertices)
+    vertices = [bottom_left, bottom_right, top_right, top_left].concat(vertices)
+    colors = [vec3(0,1,0), vec3(0,1,0), vec3(0,1,0), vec3(0,1,0)].concat(colors)
+    colors = [vec3(0.1,0.3,0), vec3(0.1,0.3,0), vec3(0.1,0.3,0)].concat(colors)
+    colors = [vec3(0,1,0.8), vec3(0,1,0.8), vec3(0,1,0.8)].concat(colors)
+    colors = [vec3(1,1,0), vec3(1,1,0), vec3(1,1,0)].concat(colors)
+    colors = [vec3(0.3,0.5,0.1), vec3(0.3,0.5,0.1), vec3(0.3,0.5,0.1)].concat(colors)
+    console.log(vertices)
+
 }
 
 function triangle(a, b, c) {
@@ -79,6 +87,10 @@ function tetrahedron(a, b, c, d, n) {
 }
 
 window.onload = function init() {
+    var a = document.getElementById("circle");
+    a.addEventListener("click", function(d) {
+	toggleCircle = !toggleCircle
+    })
 
     canvas = document.getElementById("gl-canvas");
 
@@ -149,10 +161,42 @@ function render() {
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+	ctm = mat4()
+
+	// Find the vectors that points from the tip of the triangle to the center of the sphere
+	// find the dot product of that vector and 0,1,0,0 vector for the angle
+	// Find the cross product between the two and roatae on that axis
+	
+	var tip_pointing_point = vec4(px,py,pz,1)
+	var v3 =  subtract(vec4(dx,dy,dz,1), tip_pointing_point, )
+	let ange = angle(vec4(0,1,0,0), v3) 
+	// ctm = mult(ctm, rotate(ange, cross(tip_pointing, v3)))
+	// ange = 450 
+    if (toggleCircle) {
+	px += v3[0]/80
+	py += v3[1]/80
+	pz += v3[2]/80
+    }
+    ctm = mult(ctm, translate(px,py,pz))
+	ctm = mult(ctm, rotate(ange, cross(v3,vec4(0,1,0,0))))
+//	tip_pointing = mult(rotate(ange, cross(v3, tip_pointing)), tip_pointing)
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+
+    // if the tip of the pyraid si within the radius of the circle then delete the circle
+    // To get the location of the tip you need to keep track of 0,1,0,1 point after all the rotations
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
+	gl.drawArrays(gl.TRIANGLE_FAN, 4,3 )
+	gl.drawArrays(gl.TRIANGLE_FAN, 7,3 )
+	gl.drawArrays(gl.TRIANGLE_FAN, 10,3 )
+	gl.drawArrays(gl.TRIANGLE_FAN, 13,3 )
 	var ctm = mat4()
+    if (toggleCircle) {
 	dx += vx
 	dy += vy
 	dz += vz
+    }
+
 	ctm = mult(ctm, translate(dx,dy,dz))
 
 	if (dy >= 0.8 || dy <= -0.8) {
@@ -165,39 +209,13 @@ function render() {
 		vx *= -1
 	}
 
+    if (toggleCircle) {
 	ctm = mult(ctm, scale(0.2,0.2,0.2))
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
-    for( var i=0; i<index; i+=3)
+    for( var i=16; i<index; i+=3)
         gl.drawArrays(gl.LINE_LOOP, i, 3);
-
-	ctm = mat4()
-
-	// Find the vectors that points from the tip of the triangle to the center of the sphere
-	// find the dot product of that vector and 0,1,0,0 vector for the angle
-	// Find the cross product between the two and roatae on that axis
-	
-	var tip_pointing_point = vec4(px,py,pz,1)
-	var v3 =  subtract(vec4(dx,dy,dz,1), tip_pointing_point, )
-	let ange = angle(vec4(0,1,0,0), v3) 
-	// ctm = mult(ctm, rotate(ange, cross(tip_pointing, v3)))
-	// ange = 450 
-    ctm = mult(ctm, translate(px += v3[0]/80,py += v3[1]/80,pz += v3[2]/80))
-	ctm = mult(ctm, rotate(ange, cross(v3,vec4(0,1,0,0))))
-//	tip_pointing = mult(rotate(ange, cross(v3, tip_pointing)), tip_pointing)
-
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
-
-    // if the tip of the pyraid si within the radius of the circle then delete the circle
-    // To get the location of the tip you need to keep track of 0,1,0,1 point after all the rotations
-
-
-	gl.drawArrays(gl.TRIANGLE_FAN, index, 4)
-	gl.drawArrays(gl.TRIANGLE_FAN, index +4,3 )
-	gl.drawArrays(gl.TRIANGLE_FAN, index +7,3 )
-	gl.drawArrays(gl.TRIANGLE_FAN, index +10,3 )
-	gl.drawArrays(gl.TRIANGLE_FAN, index +13,3 )
+    }
 
 	requestAnimationFrame(render);
-
 }
 
