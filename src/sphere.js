@@ -190,8 +190,8 @@ function render() {
 	let ange = angle(vec4(0,1,0,0), v3) 
 	// ctm = mult(ctm, rotate(ange, cross(tip_pointing, v3)))
 	// ange = 450 
+    ctm = mult(ctm, translate(px += v3[0]/80,py += v3[1]/80,pz += v3[2]/80))
 	ctm = mult(ctm, rotate(ange, cross(v3,vec4(0,1,0,0))))
-    ctm = mult(ctm, translate(px += v3[0]/10,py += v3[1]/10,pz += v3[2]/10))
 //	tip_pointing = mult(rotate(ange, cross(v3, tip_pointing)), tip_pointing)
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
