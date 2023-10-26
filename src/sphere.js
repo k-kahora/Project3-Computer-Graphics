@@ -20,7 +20,7 @@ var vc = vec4(-0.816497, -0.471405, 0.333333, 1);
 var vd = vec4(0.816497, -0.471405, 0.333333,1);
 
 var ctm;
-var x, y, z, dx, dy, dz, vx, vy, vz;
+var x, y, z, dx, dy, dz, vx, vy, vz, px, py, pz;
 
 function pyramid() {
 	let bottom_left = vec4(-0.1,0,0.1,1)
@@ -108,6 +108,8 @@ window.onload = function init() {
     vy = 0.06 * Math.random() - 0.03;
     vz = 0.06 * Math.random() - 0.03;
 
+	px = 0; py = 0; pz = 0;
+
 
 
 	
@@ -183,12 +185,15 @@ function render() {
 	// find the dot product of that vector and 0,1,0,0 vector for the angle
 	// Find the cross product between the two and roatae on that axis
 	
-	var tip_pointing_point = vec4(0,0,0,1)
+	var tip_pointing_point = vec4(px,py,pz,1)
 	var v3 =  subtract(vec4(dx,dy,dz,1), tip_pointing_point, )
 	let ange = angle(vec4(0,1,0,0), v3) 
 	// ctm = mult(ctm, rotate(ange, cross(tip_pointing, v3)))
 	// ange = 450 
+	ctm = mult(ctm, translate(0,0,0))
 	ctm = mult(ctm, rotate(ange, cross(v3,vec4(0,1,0,0))))
+	ctm = mult(ctm, translate(px,py,pz))
+	px += 0.001
 //	tip_pointing = mult(rotate(ange, cross(v3, tip_pointing)), tip_pointing)
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
