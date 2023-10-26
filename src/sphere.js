@@ -33,10 +33,11 @@ function pyramid() {
 	vertices = vertices.concat([bottom_right, top_right, tip])
 	vertices = vertices.concat([top_right, top_left, tip])
 	vertices = vertices.concat([top_left, bottom_left, tip])
-	colors = colors.concat([vec3(0,1,0), vec3(0,1,0), vec3(1,1,0), vec3(1,1,0)])
-	colors = colors.concat([vec3(0.1,1,0), vec3(0,0.3,0), vec3(1,0,0)])
-	colors = colors.concat([vec3(0,1,0.8), vec3(0,1,0.5), vec3(1,1,0.5)])
-	colors = colors.concat([vec3(0,1,0.1), vec3(0.1,0,0), vec3(1,1,0)])
+	colors = colors.concat([vec3(0,1,0), vec3(0,1,0), vec3(0,1,0), vec3(0,1,0)])
+	colors = colors.concat([vec3(0.1,0.3,0), vec3(0.1,0.3,0), vec3(0.1,0.3,0)])
+	colors = colors.concat([vec3(0,1,0.8), vec3(0,1,0.8), vec3(0,1,0.8)])
+	colors = colors.concat([vec3(1,1,0), vec3(1,1,0), vec3(1,1,0)])
+	colors = colors.concat([vec3(0.3,0.5,0.1), vec3(0.3,0.5,0.1), vec3(0.3,0.5,0.1)])
 }
 
 function triangle(a, b, c) {
@@ -133,22 +134,29 @@ window.onload = function init() {
 }
 
 
+var axis = 0
 function render() {
+	axis += 2
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	var ctm = mat4()
+	ctm = mult(ctm, scale(0.3,0.3,0.3))
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
     for( var i=0; i<index; i+=3)
         gl.drawArrays(gl.LINE_LOOP, i, 3);
 
-	ctm = mult(ctm, rotateX(30))
+	ctm = mult(ctm, rotateX(-axis))
+	ctm = mult(ctm, scale(9,9,9))
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
 
 	gl.drawArrays(gl.TRIANGLE_FAN, index, 4)
 	gl.drawArrays(gl.TRIANGLE_FAN, index +4,3 )
 	gl.drawArrays(gl.TRIANGLE_FAN, index +7,3 )
 	gl.drawArrays(gl.TRIANGLE_FAN, index +10,3 )
+	gl.drawArrays(gl.TRIANGLE_FAN, index +13,3 )
+
+	requestAnimationFrame(render);
 
 }
 
