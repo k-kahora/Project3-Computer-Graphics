@@ -6,11 +6,9 @@ var program;
 
 // animations
 var modelViewMatrixLoc;
-
 var numTimesToSubdivide = 3;
-
+var radius = 0.1
 var index = 0;
-
 var vertices = [];
 var colors = [];
 
@@ -107,13 +105,8 @@ window.onload = function init() {
     vx = 0.06 * Math.random() - 0.03;
     vy = 0.06 * Math.random() - 0.03;
     vz = 0.06 * Math.random() - 0.03;
-
-	px = 0; py = 0; pz = 0;
-
-
-
-	
-	pyramid()
+    px = 0; py = 0; pz = 0;
+    pyramid()
 
     //triangle(va, vb, vc);
 
@@ -139,8 +132,6 @@ window.onload = function init() {
 
     render();
 }
-
-
 
 function angle(v1, v2) {
 	let dot_product = dot(v2, v1)
@@ -195,6 +186,10 @@ function render() {
 //	tip_pointing = mult(rotate(ange, cross(v3, tip_pointing)), tip_pointing)
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+
+    // if the tip of the pyraid si within the radius of the circle then delete the circle
+    // To get the location of the tip you need to keep track of 0,1,0,1 point after all the rotations
+
 
 	gl.drawArrays(gl.TRIANGLE_FAN, index, 4)
 	gl.drawArrays(gl.TRIANGLE_FAN, index +4,3 )
