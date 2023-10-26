@@ -157,9 +157,10 @@ function render() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	var ctm = mat4()
-	// dx += vx
-	// dy += vy
-	ctm = mult(ctm, translate(dx,dy,0))
+	dx += vx
+	dy += vy
+	dz += vz
+	ctm = mult(ctm, translate(dx,dy,dz))
 
 	if (dy >= 0.8 || dy <= -0.8) {
 		vy *= -1
@@ -183,10 +184,8 @@ function render() {
 	// Find the cross product between the two and roatae on that axis
 	
 	var tip_pointing_point = vec4(0,0,0,1)
-	var v3 =  subtract(vec4(dx,dy,0,1), tip_pointing_point, )
+	var v3 =  subtract(vec4(dx,dy,dz,1), tip_pointing_point, )
 	let ange = angle(vec4(0,1,0,0), v3) 
-	console.log(angle(vec4(0,1,0,0), vec4(0.1,1,0,0)))
-	console.log(cross(vec4(0,1,0,0), v3))
 	// ctm = mult(ctm, rotate(ange, cross(tip_pointing, v3)))
 	// ange = 450 
 	ctm = mult(ctm, rotate(ange, cross(v3,vec4(0,1,0,0))))
