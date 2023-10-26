@@ -20,7 +20,7 @@ var vc = vec4(-0.816497, -0.471405, 0.333333, 1);
 var vd = vec4(0.816497, -0.471405, 0.333333,1);
 
 var ctm;
-var x, y, z, dx, dy, dz;
+var x, y, z, dx, dy, dz, vx, vy, vz;
 
 function pyramid() {
 	let bottom_left = vec4(-0.1,0,0.1,1)
@@ -98,15 +98,20 @@ window.onload = function init() {
     program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
 
-    tetrahedron(va, vb, vc, vd, 3);
+    tetrahedron(va, vb, vc, vd, 2);
     x = 0; y = 0; z = 0;
-    dx = 0.05*Math.random();
-    dy = 0.05*Math.random();
-    dz = 0.05*Math.random();
+    dx = 1.6 * Math.random() - 0.8;
+    dz = 1.6 * Math.random() - 0.8;
+    dy = 1.6 * Math.random() - 0.8;
+
+    vx = 0.06 * Math.random() - 0.03;
+    vy = 0.06 * Math.random() - 0.03;
+    vz = 0.06 * Math.random() - 0.03;
+
+
+
 	
-	console.log(vertices.length)
 	pyramid()
-	console.log(vertices.length)
 
     //triangle(va, vb, vc);
 
@@ -134,20 +139,59 @@ window.onload = function init() {
 }
 
 
+
+function angle(v1, v2) {
+	let dot_product = dot(v2, v1)
+	let mag_v1 = Math.sqrt(v1[0] ** 2 + v1[1] ** 2 + v1[2] ** 2)
+	let mag_v2 = Math.sqrt(v2[0] ** 2 + v2[1] ** 2 + v2[2] ** 2)
+	let angle = Math.acos(dot_product/ (mag_v2 * mag_v1))
+	return angle * (180 / Math.PI)
+
+}
+
 var axis = 0
+var tip_pointing = vec4(0,1,0,0)
 function render() {
 	axis += 2
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	var ctm = mat4()
-	ctm = mult(ctm, scale(0.3,0.3,0.3))
+	// dx += vx
+	// dy += vy
+	ctm = mult(ctm, translate(dx,dy,0))
+
+	if (dy >= 0.8 || dy <= -0.8) {
+		vy *= -1
+	}
+	if (dz >= 0.8 || dz <= -0.8) {
+		vz *= -1
+	}
+	if (dx >= 0.8 || dx <= -0.8) {
+		vx *= -1
+	}
+
+	ctm = mult(ctm, scale(0.2,0.2,0.2))
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
     for( var i=0; i<index; i+=3)
         gl.drawArrays(gl.LINE_LOOP, i, 3);
 
-	ctm = mult(ctm, rotateX(-axis))
-	ctm = mult(ctm, scale(9,9,9))
+	ctm = mat4()
+
+	// Find the vectors that points from the tip of the triangle to the center of the sphere
+	// find the dot product of that vector and 0,1,0,0 vector for the angle
+	// Find the cross product between the two and roatae on that axis
+	
+	var tip_pointing_point = vec4(0,0,0,1)
+	var v3 =  subtract(vec4(dx,dy,0,1), tip_pointing_point, )
+	let ange = angle(vec4(0,1,0,0), v3) 
+	console.log(angle(vec4(0,1,0,0), vec4(0.1,1,0,0)))
+	console.log(cross(vec4(0,1,0,0), v3))
+	// ctm = mult(ctm, rotate(ange, cross(tip_pointing, v3)))
+	// ange = 450 
+	ctm = mult(ctm, rotate(ange, cross(v3,vec4(0,1,0,0))))
+//	tip_pointing = mult(rotate(ange, cross(v3, tip_pointing)), tip_pointing)
+
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
 
 	gl.drawArrays(gl.TRIANGLE_FAN, index, 4)
