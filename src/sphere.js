@@ -1,3 +1,4 @@
+
 "use strict";
 
 var canvas;
@@ -25,13 +26,18 @@ var x, y, z, dx, dy, dz, vx, vy, vz, px, py, pz;
 
 
 function pyramid() {
-	let bottom_left = vec4(-0.1,0,0.1,1)
-	let bottom_right = vec4(0.1,0,0.1,1)
-	let top_right = vec4(0.1,0,-0.1,1)
-	let top_left = vec4(-0.1,0,-0.1,1)
-	let tip = vec4(0,0.1,0,1)
+    // This defines 5 points that are on the pyramid
+    // It is consturcted by drawing the 3 triangles and then
+    // the square on the bottom
+    let bottom_left = vec4(-0.1,0,0.1,1)
+    let bottom_right = vec4(0.1,0,0.1,1)
+    let top_right = vec4(0.1,0,-0.1,1)
+    let top_left = vec4(-0.1,0,-0.1,1)
+    let tip = vec4(0,0.1,0,1)
 
     // The order has to be reversed due to conctaing in the front
+    // By putting these verticies in the front I am able to make the
+    // Sphere the thing that can be removed by the toggle button
 
     vertices = [top_left, bottom_left, tip].concat(vertices)
     vertices = [top_right, top_left, tip].concat(vertices)
@@ -44,7 +50,6 @@ function pyramid() {
     colors = [vec3(1,1,0), vec3(1,1,0), vec3(1,1,0)].concat(colors)
     colors = [vec3(0.3,0.5,0.1), vec3(0.3,0.5,0.1), vec3(0.3,0.5,0.1)].concat(colors)
     console.log(vertices)
-
 }
 
 function triangle(a, b, c) {
@@ -88,6 +93,7 @@ function tetrahedron(a, b, c, d, n) {
 }
 
 window.onload = function init() {
+    //  Whenever this button is clicked the circle appears and the triangle starts chasing the circle again
     var a = document.getElementById("circle");
     a.addEventListener("click", function(d) {
 	toggleCircle = !toggleCircle
@@ -108,8 +114,12 @@ window.onload = function init() {
     //
     program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
-
+    
     tetrahedron(va, vb, vc, vd, 2);
+
+    // dx, dy, dz are the positoin for the ball
+    // vx, vy, vz are the position for the 
+    
     x = 0; y = 0; z = 0;
     dx = 1.6 * Math.random() - 0.8;
     dz = 1.6 * Math.random() - 0.8;
@@ -119,6 +129,7 @@ window.onload = function init() {
     vy = 0.06 * Math.random() - 0.03;
     vz = 0.06 * Math.random() - 0.03;
     px = 0; py = 0; pz = 0;
+    // Set the points for the pyramid
     pyramid()
 
     //triangle(va, vb, vc);
@@ -146,53 +157,57 @@ window.onload = function init() {
     render();
 }
 
-function angle(v1, v2) {
+// Returns the angle between two vectors using the dot product
+function get_angle(v1, v2) {
 	let dot_product = dot(v2, v1)
 	let mag_v1 = Math.sqrt(v1[0] ** 2 + v1[1] ** 2 + v1[2] ** 2)
 	let mag_v2 = Math.sqrt(v2[0] ** 2 + v2[1] ** 2 + v2[2] ** 2)
 	let angle = Math.acos(dot_product/ (mag_v2 * mag_v1))
 	return angle * (180 / Math.PI)
 }
+// length of the vectors needed to calculate the angle
 function magnitude(v1) {
     return Math.sqrt(v1[0] ** 2 + v1[1] ** 2 + v1[2] ** 2)
 }
 
-var axis = 0
+// At angle 0 the pyramid points straight up
 var tip_pointing = vec4(0,1,0,0)
 function render() {
-	axis += 2
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	ctm = mat4()
+    ctm = mat4()
 
-	// Find the vectors that points from the tip of the triangle to the center of the sphere
-	// find the dot product of that vector and 0,1,0,0 vector for the angle
-	// Find the cross product between the two and roatae on that axis
-	
-	var tip_pointing_point = vec4(px,py,pz,1)
-	var v3 =  subtract(vec4(dx,dy,dz,1), tip_pointing_point, )
-	let ange = angle(vec4(0,1,0,0), v3) 
-	// ctm = mult(ctm, rotate(ange, cross(tip_pointing, v3)))
-	// ange = 450 
+    // Find the vectors that points from the tip of the triangle to the center of the sphere
+    // find the dot product of that vector and 0,1,0,0 vector for the angle
+    // Find the cross product between the two and roatae on that axis
+    
+    var tip_pointing_point = vec4(px,py,pz,1)
+    var v3 =  subtract(vec4(dx,dy,dz,1), tip_pointing_point, )
+    let angle = get_angle(vec4(0,1,0,0), v3) 
+
+    // When the button is clicked pause calculations for the sphere
     if (toggleCircle) {
 	v3 = normalize(v3)
-	px += v3[0]/50
-	py += v3[1]/50
-	pz += v3[2]/50
+	px += v3[0]/80
+	py += v3[1]/80
+	pz += v3[2]/80
     }
+    // If the sphere has been tagged move the pyramid to the center and make it face up
     if (tagged) {
 	px = 0
 	py = 0
 	pz = 0
 	ctm = mult(ctm, rotateZ(0))
 
+    // Progress the pyramid forward and rotate by the angle between to face the sphere
     } else {
-    ctm = mult(ctm, translate(px,py,pz))
-	ctm = mult(ctm, rotate(ange, cross(v3,vec4(0,1,0,0))))
+	ctm = mult(ctm, translate(px,py,pz))
+	ctm = mult(ctm, rotate(angle, cross(v3,vec4(0,1,0,0))))
     }
-//	tip_pointing = mult(rotate(ange, cross(v3, tip_pointing)), tip_pointing)
 
+    // If the distance between the center of the ball and the tip of the triangle is less than 0.03 
+    // Then mark the ball as tagged and end the simulation
     let ctl = ctm
     let tip_p = mult(ctl, vec4(0,0.1,0,1))
     let ballxyz = vec4(dx,dy,dz,1)
@@ -200,45 +215,46 @@ function render() {
 	tagged = true
 	console.log("tagged")
     }
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
 
-    // if the tip of the pyraid si within the radius of the circle then delete the circle
-    // To get the location of the tip you need to keep track of 0,1,0,1 point after all the rotations
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
-	gl.drawArrays(gl.TRIANGLE_FAN, 4,3 )
-	gl.drawArrays(gl.TRIANGLE_FAN, 7,3 )
-	gl.drawArrays(gl.TRIANGLE_FAN, 10,3 )
-	gl.drawArrays(gl.TRIANGLE_FAN, 13,3 )
-	var ctm = mat4()
+    gl.drawArrays(gl.TRIANGLE_FAN, 4,3 )
+    gl.drawArrays(gl.TRIANGLE_FAN, 7,3 )
+    gl.drawArrays(gl.TRIANGLE_FAN, 10,3 )
+    gl.drawArrays(gl.TRIANGLE_FAN, 13,3 )
+
+    // This marks the end of the logic for the pyramid
+    //--------------------------------------------------------------------------------------------------------------------------------
+    // Ball logic
+    var ctm = mat4()
+
+    if (toggleCircle) {
+    }
+    ctm = mult(ctm, translate(dx,dy,dz))
+    // When the ball hits a boundry flip its velocity
+    if (dy >= 0.8 || dy <= -0.8) {
+	vy *= -1
+    }
+    if (dz >= 0.8 || dz <= -0.8) {
+	vz *= -1
+    }
+    if (dx >= 0.8 || dx <= -0.8) {
+	vx *= -1
+    }
+
+    // Only draw and move the ball when toggle circle has been clicked
     if (toggleCircle) {
 	dx += vx
 	dy += vy
 	dz += vz
-    }
-    // If the pyramids tip is within range of the balls center delete the ball and transtformthe pyramid
-
-	ctm = mult(ctm, translate(dx,dy,dz))
-
-	if (dy >= 0.8 || dy <= -0.8) {
-		vy *= -1
-	}
-	if (dz >= 0.8 || dz <= -0.8) {
-		vz *= -1
-	}
-	if (dx >= 0.8 || dx <= -0.8) {
-		vx *= -1
-	}
-
-    if (toggleCircle) {
-	
 	ctm = mult(ctm, scale(0.2,0.2,0.2))
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+	gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+	// IF taged never draw the ball again
 	if (!tagged) {
-    for( var i=16; i<index; i+=3)
-        gl.drawArrays(gl.LINE_LOOP, i, 3);
+	    for( var i=16; i<index; i+=3)
+		gl.drawArrays(gl.LINE_LOOP, i, 3);
 	}
     }
-
-	requestAnimationFrame(render);
+    requestAnimationFrame(render);
 }
 
