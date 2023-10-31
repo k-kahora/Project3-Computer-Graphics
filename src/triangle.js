@@ -175,6 +175,8 @@ C55555644446`
     var colors = []
     // converst the hex into binary stinrg
 
+    // Draw the maze graph depending on where the ones are in the binary
+    // Loops trough the converted maze string after its been in binary form
     var maze_graph = function(items) {
 	var step = 1/6
 	for (let j = 0; j < items.length; j++) {
@@ -219,6 +221,7 @@ C55555644446`
     // Puts the vec2 into the points list
     maze_graph(final_map)
 
+    // The border is there to adjust for the middle position of each square
     var border = 1 - 1/12
     var radius = 0.05
     var precision = 0.1
@@ -268,6 +271,8 @@ C55555644446`
     render();
 };
 
+// First draw the maze then the circle with the triangle and finally the path
+// Only transform the circle and the triangle by reseting the ctm after
 function render() {
 
     gl.clear(gl.COLOR_BUFFER_BIT); 
