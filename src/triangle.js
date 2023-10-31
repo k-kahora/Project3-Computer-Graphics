@@ -13,15 +13,6 @@ var line_size = 1
 
 var theta = 0
 
-const Direction = {
-    UP: 3,
-    RIGHT: 2,
-    DOWN: 1,
-    LEFT: 0
-}
-
-var direction = Direction.UP
-
 var row = 2
 var col = 11
 
@@ -30,7 +21,7 @@ var interpolate = function (x, x0, x1, y0, y1) {
 }
 
 var finished = false
-// Start at the begining
+// Start at the begining which is 0 11
 var cur_y = interpolate(row, 0, 11, (1 - border), (-1 + border))
 var cur_x = interpolate(col, 0, 11, (-1 + border), (1 - border))
 
@@ -88,14 +79,18 @@ window.onload = function init()
 	var current_spot = final_map[row][col]
 	var clamp = (d, m, ma) => Math.max(m,Math.min(ma, d))
 	
-	    switch (event.key) {
-	    case "ArrowRight":
-		theta -= 90
-		break
-	    case "ArrowLeft":
-		theta += 90
-		break
-	    case "ArrowUp":
+		// Rotate logic
+		switch (event.key) {
+			case "ArrowRight":
+				theta -= 90
+			break
+			case "ArrowLeft":
+				theta += 90
+			break
+			case "ArrowUp":
+        
+		// cur_dir is an array where the direction the mouse is facing is a one
+		// this way cur_index is the index which is the direction the mouse is facing
 
 		let angle_deg = theta * (Math.PI / 180)
 		let cur_dir = [-Math.cos(angle_deg), -Math.sin(angle_deg), Math.cos(angle_deg), Math.sin(angle_deg)]
@@ -103,42 +98,36 @@ window.onload = function init()
 		let n_col = col
 		let n_row = row
 
+	    // 3 is right most starting at up, 
+		// up, right, down, left
 		switch (cur_index) {
-		    case 3:
-			n_row = clamp(n_row - 1, 0, 11)
-			console.log("UP")
-		    break;
-		    case 2:
-			n_col = clamp(n_col + 1, 0, 11)
-			console.log("RIGHT")
-		    break;
-		    case 1:
-			n_row = clamp(n_row + 1, 0, 11)
-			console.log("DOWN")
-		    break;
-		    case 0:
-			n_col = clamp(n_col - 1, 0, 11)
-			console.log("LEFT")
-		    break;
+			case 3:
+				n_row = clamp(n_row - 1, 0, 11)
+			break;
+			case 2:
+				n_col = clamp(n_col + 1, 0, 11)
+			break;
+			case 1:
+				n_row = clamp(n_row + 1, 0, 11)
+			break;
+			case 0:
+				n_col = clamp(n_col - 1, 0, 11)
+			break;
 		}
+		// n_row and n_col is the positon in which the mouse is facing
+		// if the point the mouse is facing has a wall do not update the row and col to n_row and n_col
 		if (current_spot[cur_index] == "1" || final_map[n_row][n_col] == "1") {
-		    row = clamp(row, 0, 11)
-		    col = clamp(col, 0, 11)
+			row = clamp(row, 0, 11)
+			col = clamp(col, 0, 11)
 		} else {
-		    row = clamp(n_row, 0, 11)
-		    col = clamp(n_col, 0, 11)
+			row = clamp(n_row, 0, 11)
+			col = clamp(n_col, 0, 11)
 		}
 
-		break
-	    }
-	if (row == 5 && col == 11) {
-	    finished = true
-	}
-	// clamp row and col within 0 and 12
-	
-	console.log(row)
-	
-	// turn row and cols into x and y
+		if (row == 5 && col == 11) {
+			finished = true
+		}
+	// interpolate the border within eache square so given an index put it in the right spot
 	border = 1/12
 	cur_y = interpolate(row, 0, 11, (1 - border), (-1 + border))
 	cur_x = interpolate(col, 0, 11, (-1 + border), (1 - border))
@@ -146,7 +135,7 @@ window.onload = function init()
 
 	// update the ctm
 
-    }
+    }}
 
     // Graph walls encode with hex
 
@@ -177,6 +166,8 @@ C55555644446`
 
     // Draw the maze graph depending on where the ones are in the binary
     // Loops trough the converted maze string after its been in binary form
+	// VERTICIES AND COLORS FOR THE MAZE 
+
     var maze_graph = function(items) {
 	var step = 1/6
 	for (let j = 0; j < items.length; j++) {
@@ -226,8 +217,8 @@ C55555644446`
     var radius = 0.05
     var precision = 0.1
 
+	// circle and the triangle that are used as the mouse
     var circle = circle_calc(0,0,precision,radius, vec3(0,0,1), color_hollow_circle)
-
     var face = [vec2(-0.1,0), vec2(0,0.1), vec2(0.1,0)]
     var face_color = [vec3(1,0,1), vec3(1,0.5,0), vec3(0.3,1,0.06)]
 
@@ -235,7 +226,6 @@ C55555644446`
     length_points = points.length
     colors = colors.concat(color_hollow_circle).concat(face_color)
     points = points.concat(circle).concat(face)
-    // length as global var
 
     points.push(vec2(cur_x,cur_y))
     colors.push(vec3(0,0,0))
